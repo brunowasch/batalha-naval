@@ -28,13 +28,25 @@ public class BatalhaNaval {
             System.out.println();
         }
     }
-     // Jogo contra a máquina
+    public static void posicionarNavios(int[][] tabuleiro, String jogador) { //Pergunta como o usuário quer posicionar o barco
+        Scanner ler = new Scanner(System.in);
+        System.out.println("Você deseja posicionar os navios manualmente ou automaticamente?");
+        System.out.println("1 - Manual");
+        System.out.println("2 - Automático");
+        int escolha = ler.nextInt();
+        if (escolha == 1) {
+            posicionarNaviosManualmente(tabuleiro, jogador);
+        } else {
+            posicionarNaviosAutomaticamente(tabuleiro);
+        }
+    }
+
+    // Jogo contra a máquina
     public static void singlePlayer() {
         Scanner ler = new Scanner(System.in);
-        System.out.println("Pressione qualquer tecla do teclado para começar.");
-        String comecar = ler.nextLine();
-    
-        if (!comecar.isEmpty()) {
+        System.out.println("\nPressione ENTER e passe para começar o jogo...");
+        new Scanner(System.in).nextLine();
+
             System.out.println("Vamos começar a brincadeira! 😉");
 
             // Inicializa tabuleiros do jogador e da máquina
@@ -44,8 +56,8 @@ public class BatalhaNaval {
             int[] ultimoAcerto = {-1, -1};
     
             // Posiciona os navios manualmente para o jogador
-            posicionarNaviosManualmente(tabuleiroJogador, "Jogador");
-    
+            posicionarNavios(tabuleiroJogador, "Jogador");
+
             // Posiciona automaticamente para a máquina
             posicionarNaviosAutomaticamente(tabuleiroMaquina);
     
@@ -85,7 +97,6 @@ public class BatalhaNaval {
             System.out.println("\n🧭 Tabuleiro da máquina:");
             mostrarTabuleiro(tabuleiroMaquina, true);
         }
-    }   
     // Jogo entre dois jogadores
     public static void multiPlayer() {
         Scanner ler = new Scanner(System.in);
@@ -99,12 +110,14 @@ public class BatalhaNaval {
 
         int[][] tabuleiro1 = new int[10][10]; // tabuleiro do Jogador 1
         int[][] tabuleiro2 = new int[10][10]; // tabuleiro do Jogador 2
-        
+        ler = new Scanner(System.in);
         // Cada jogador posiciona seus navios
-        posicionarNaviosManualmente(tabuleiro1, player1);
+        System.out.println(" " + player1 + ",");
+        posicionarNavios(tabuleiro1, player1);
         System.out.println("\nPressione ENTER e passe para o próximo jogador...");
         new Scanner(System.in).nextLine();
-        posicionarNaviosManualmente(tabuleiro2, player2);
+        System.out.println(" " + player2 + ",");
+        posicionarNavios(tabuleiro2, player2);
 
 
         int acertos1 = 0;
@@ -296,19 +309,19 @@ public class BatalhaNaval {
             tabuleiro[linha][coluna] = 2;
             ultimoAcerto[0] = linha;
             ultimoAcerto[1] = coluna;
-            System.out.println("🤖 Máquina acertou um navio! 💥");
+            System.out.println("🤖 A máquina acertou um navio! 💥");
         } else {
             tabuleiro[linha][coluna] = 3;
             // Resetar último acerto para não tentar adjacentes na próxima vez
             ultimoAcerto[0] = -1;
             ultimoAcerto[1] = -1;
-            System.out.println("🤖 Máquina deu um tiro na água! 💦");
+            System.out.println("🤖 A máquina deu um tiro na água! 💦");
         }
     }
     
     // Lógica da jogada automática da máquina (inteligência simples com adjacentes)
     public static void jogadaMaquinaSimples(int[][] tabuleiro, boolean[][] jaAtacou, int[] ultimoAcerto) {
-        Random rand = new Random();
+        Random aleatorio = new Random();
         int linha, coluna;
     
         // Tenta adjacentes se houver último acerto
@@ -328,24 +341,24 @@ public class BatalhaNaval {
     
         // Se não encontrou adjacentes válidas ou ainda não teve acerto, escolhe aleatório
         do {
-            linha = rand.nextInt(10);
-            coluna = rand.nextInt(10);
+            linha = aleatorio.nextInt(10);
+            coluna = aleatorio.nextInt(10);
         } while (jaAtacou[linha][coluna]);
     
         marcarJogada(tabuleiro, jaAtacou, linha, coluna, ultimoAcerto);
     }
     
     // Posiciona os navios aleatoriamente (para a máquina)
-    public static void posicionarNaviosAutomaticamente(int[][] tabuleiro) {
-        Random rand = new Random();
+    public static void posicionarNaviosAutomaticamente(int[][] tabuleiro) { //Permite o usuário automatizar as posições que quiser botar
+        Random aleatorio = new Random();
         int[] tamanhos = {4, 3, 3, 2, 2, 2, 1, 1, 1, 1};
     
         for (int tamanho : tamanhos) { // percorre todos os navios
             boolean posicionado = false;
             while (!posicionado) { // tenta posicionar até achar espaço válido
-                int linha = rand.nextInt(10);
-                int coluna = rand.nextInt(10);
-                char direcao = rand.nextBoolean() ? 'H' : 'V';
+                int linha = aleatorio.nextInt(10);
+                int coluna = aleatorio.nextInt(10);
+                char direcao = aleatorio.nextBoolean() ? 'H' : 'V';
     
                 if (verificarPosicaoValida(tabuleiro, linha, coluna, tamanho, direcao)) {
                     for (int j = 0; j < tamanho; j++) { // insere cada parte do navio
