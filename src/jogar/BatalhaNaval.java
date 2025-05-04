@@ -27,39 +27,62 @@ public class BatalhaNaval {
             System.out.println();
         }
     }
+
     public static void singlePlayer() {
         Scanner ler = new Scanner(System.in);
         System.out.println("Pressione qualquer tecla do teclado para começar.");
         String comecar = ler.nextLine();
-
+    
         if (!comecar.isEmpty()) {
             System.out.println("Vamos começar a brincadeira! 😉");
-            int[][] tabuleiro = new int[10][10];
-            posicionarNaviosManualmente(tabuleiro, "Jogador");
-
-            int tentativas = 0;
-            int acertos = 0;
-
-            while (acertos < 5) {
-                mostrarTabuleiro(tabuleiro, false);
-                jogarRodada(tabuleiro);
-                tentativas++;
-
-                // conta acertos
-                acertos = 0;
-                for (int[] linha : tabuleiro) {
-                    for (int celula : linha) {
-                        if (celula == 2) acertos++;
-                    }
-                }
+    
+            int[][] tabuleiroJogador = new int[10][10];
+            int[][] tabuleiroMaquina = new int[10][10];
+            boolean[][] jaAtacou = new boolean[10][10];
+            int[] ultimoAcerto = {-1, -1};
+    
+            // Posiciona os navios manualmente para o jogador
+            posicionarNaviosManualmente(tabuleiroJogador, "Jogador");
+    
+            // Posiciona automaticamente para a máquina
+            posicionarNaviosAutomaticamente(tabuleiroMaquina);
+    
+            int acertosJogador = 0;
+            int acertosMaquina = 0;
+            int totalNavios = 20;
+    
+            while (acertosJogador < totalNavios && acertosMaquina < totalNavios) {
+                System.out.println("\n🔫 Sua vez de atacar!");
+                mostrarTabuleiro(tabuleiroMaquina, false);
+                jogarRodada(tabuleiroMaquina);
+    
+                // Conta acertos do jogador
+                acertosJogador = contarAcertos(tabuleiroMaquina);
+                if (acertosJogador == totalNavios) break;
+    
+                System.out.println("\n🤖 Vez da máquina:");
+                mostrarTabuleiro(tabuleiroJogador, false);
+                jogadaMaquinaSimples(tabuleiroJogador, jaAtacou, ultimoAcerto);
+    
+                // Conta acertos da máquina
+                acertosMaquina = contarAcertos(tabuleiroJogador);
             }
-
-            System.out.println("🎉 Parabéns! Você afundou todos os navios em " + tentativas + " tentativas.");
-            mostrarTabuleiro(tabuleiro, true);
+    
+            // Exibe resultado final
+            System.out.println("\n🏁 Fim de jogo!");
+            if (acertosJogador == totalNavios) {
+                System.out.println("🎉 Você venceu! Todos os navios da máquina foram afundados!");
+            } else {
+                System.out.println("🤖 A máquina venceu! Todos os seus navios foram afundados!");
+            }
+    
+            System.out.println("\n🧭 Seu tabuleiro:");
+            mostrarTabuleiro(tabuleiroJogador, true);
+    
+            System.out.println("\n🧭 Tabuleiro da máquina:");
+            mostrarTabuleiro(tabuleiroMaquina, true);
         }
-    }
-
-
+    }   
 
     public static void multiPlayer() {
         Scanner ler = new Scanner(System.in);
@@ -81,7 +104,7 @@ public class BatalhaNaval {
 
         int acertos1 = 0;
         int acertos2 = 0;
-        int totalNavios = 5;
+        int totalNavios = 20;
         boolean vezDoJogador1 = true;
 
         while (acertos1 < totalNavios && acertos2 < totalNavios) {
@@ -216,7 +239,7 @@ public class BatalhaNaval {
                 if (tabuleiro[l][c] == 2) {
                     System.out.print("💥 ");
                 } else if (tabuleiro[l][c] == 3) {
-                    System.out.print("💦 ");
+                    System.out.print("🌊 ");
                 } else if (mostrarNavios && tabuleiro[l][c] == 1) {
                     System.out.print("🚢 ");
                 } else {
@@ -251,4 +274,85 @@ public class BatalhaNaval {
             System.out.println("Você já atirou aqui. Tente outra posição.");
         }
     }
+
+    public static void marcarJogada(int[][] tabuleiro, boolean[][] jaAtacou, int linha, int coluna, int[] ultimoAcerto) {
+        jaAtacou[linha][coluna] = true;
+        if (tabuleiro[linha][coluna] == 1) {
+            tabuleiro[linha][coluna] = 2;
+            ultimoAcerto[0] = linha;
+            ultimoAcerto[1] = coluna;
+            System.out.println("🤖 Máquina acertou um navio! 💥");
+        } else {
+            tabuleiro[linha][coluna] = 3;
+            // Resetar último acerto para não tentar adjacentes na próxima vez
+            ultimoAcerto[0] = -1;
+            ultimoAcerto[1] = -1;
+            System.out.println("🤖 Máquina deu um tiro na água! 💦");
+        }
+    }
+    
+
+    public static void jogadaMaquinaSimples(int[][] tabuleiro, boolean[][] jaAtacou, int[] ultimoAcerto) {
+        Random rand = new Random();
+        int linha, coluna;
+    
+        // Tenta adjacentes se houver último acerto
+        if (ultimoAcerto[0] != -1) {
+            int[][] direcoes = {{-1,0},{1,0},{0,-1},{0,1}};
+            for (int[] d : direcoes) {
+                int novaLinha = ultimoAcerto[0] + d[0];
+                int novaColuna = ultimoAcerto[1] + d[1];
+                if (novaLinha >= 0 && novaLinha < 10 && novaColuna >= 0 && novaColuna < 10 && !jaAtacou[novaLinha][novaColuna]) {
+                    linha = novaLinha;
+                    coluna = novaColuna;
+                    marcarJogada(tabuleiro, jaAtacou, linha, coluna, ultimoAcerto);
+                    return;
+                }
+            }
+        }
+    
+        // Se não encontrou adjacentes válidas ou ainda não teve acerto, escolhe aleatório
+        do {
+            linha = rand.nextInt(10);
+            coluna = rand.nextInt(10);
+        } while (jaAtacou[linha][coluna]);
+    
+        marcarJogada(tabuleiro, jaAtacou, linha, coluna, ultimoAcerto);
+    }
+
+    public static void posicionarNaviosAutomaticamente(int[][] tabuleiro) {
+        Random rand = new Random();
+        int[] tamanhos = {4, 3, 3, 2, 2, 2, 1, 1, 1, 1};
+    
+        for (int tamanho : tamanhos) {
+            boolean posicionado = false;
+            while (!posicionado) {
+                int linha = rand.nextInt(10);
+                int coluna = rand.nextInt(10);
+                char direcao = rand.nextBoolean() ? 'H' : 'V';
+    
+                if (verificarPosicaoValida(tabuleiro, linha, coluna, tamanho, direcao)) {
+                    for (int j = 0; j < tamanho; j++) {
+                        if (direcao == 'H') {
+                            tabuleiro[linha][coluna + j] = 1;
+                        } else {
+                            tabuleiro[linha + j][coluna] = 1;
+                        }
+                    }
+                    posicionado = true;
+                }
+            }
+        }
+    }
+
+    public static int contarAcertos(int[][] tabuleiro) {
+    int acertos = 0;
+    for (int[] linha : tabuleiro) {
+        for (int celula : linha) {
+            if (celula == 2) acertos++;
+        }
+    }
+    return acertos;
+}
+
 }
