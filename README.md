@@ -66,13 +66,5 @@ J | . . . . . . . . . .
 - Marcelo Rangel Barros  
 - Vinícius Mayer Winter  
 
-## 🛠️ Tecnologias Utilizadas
 
-- Java 8 ou superior
-- IDEs recomendadas: Eclipse, IntelliJ IDEA ou VSCode
 
-## 🚧 Em desenvolvimento
-Futuramente, podem ser adicionadas:
-- Interface gráfica (GUI)
-- Pontuação e ranking
-- Modo campanha ou torneio
